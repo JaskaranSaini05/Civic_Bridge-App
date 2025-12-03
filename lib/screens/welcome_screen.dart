@@ -23,7 +23,7 @@ class WelcomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 40),
             Text(
-              "Welcome to CivicBridge",
+              "Welcome to Civic Bridge",
               style: TextStyle(
                 fontSize: 26,
                 fontWeight: FontWeight.bold,
