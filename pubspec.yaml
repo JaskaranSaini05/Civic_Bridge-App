@@ -1,0 +1,43 @@
+name: civic_bridge_app
+description: "A new Flutter project."
+publish_to: 'none' # private package
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.1
+  flutter: ">=3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # UI / icons
+  cupertino_icons: ^1.0.8
+
+  # Firebase (will fetch latest compatible versions)
+  firebase_core: any
+  firebase_auth: any
+  cloud_firestore: any
+  firebase_storage: any
+
+  # Maps & location
+  google_maps_flutter: any
+  geolocator: any
+
+  # Media & state management
+  image_picker: any
+  provider: any
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+# Flutter-specific settings
+flutter:
+  uses-material-design: true
+
+  # Assets (add your logo here: assets/logo.png)
+  assets:
+    - assets/logo.png
