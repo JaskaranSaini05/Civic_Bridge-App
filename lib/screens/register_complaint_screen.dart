@@ -1,0 +1,358 @@
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'home_screen.dart';
+import 'complaint_history_screen.dart';
+import 'profile_screen.dart';
+
+class RegisterComplaintScreen extends StatefulWidget {
+  const RegisterComplaintScreen({super.key});
+
+  @override
+  State<RegisterComplaintScreen> createState() =>
+      _RegisterComplaintScreenState();
+}
+
+class _RegisterComplaintScreenState extends State<RegisterComplaintScreen> {
+  final titleController = TextEditingController();
+  final descriptionController = TextEditingController();
+  final addressController = TextEditingController();
+
+  String selectedCategory = 'Other';
+  int selectedIndex = 1;
+  bool loading = false;
+
+  final List<String> categories = [
+    'Road',
+    'Water',
+    'Electricity',
+    'Garbage',
+    'Street Light',
+    'Traffic',
+    'Drainage',
+    'Other',
+  ];
+
+  void resetForm() {
+    titleController.clear();
+    descriptionController.clear();
+    addressController.clear();
+    setState(() {
+      selectedCategory = 'Other';
+    });
+  }
+
+  Future<void> submitComplaint() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    if (titleController.text.isEmpty ||
+        descriptionController.text.isEmpty ||
+        addressController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill all fields')),
+      );
+      return;
+    }
+
+    setState(() {
+      loading = true;
+    });
+
+    try {
+      await FirebaseFirestore.instance.collection('complaints').add({
+        'title': titleController.text.trim(),
+        'description': descriptionController.text.trim(),
+        'category': selectedCategory,
+        'address': addressController.text.trim(),
+        'status': 'Pending',
+        'userId': user.uid,
+        'createdAt': Timestamp.now(),
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Complaint submitted successfully')),
+      );
+
+      resetForm();
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const ComplaintHistoryScreen()),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
+    }
+
+    setState(() {
+      loading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 26),
+              decoration: const BoxDecoration(
+                color: Color(0xFF1E3A6D),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(28),
+                  bottomRight: Radius.circular(28),
+                ),
+              ),
+              child: const Center(
+                child: Text(
+                  'Register New Complaint',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Title',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: resetForm,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.redAccent,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: const Text(
+                              'Reset',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    _inputField(
+                      controller: titleController,
+                      hint: 'Enter complaint title',
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Description',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    _inputField(
+                      controller: descriptionController,
+                      hint: 'Enter complaint description',
+                      maxLines: 2,
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Category',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    _dropdownField(),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Address',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    _inputField(
+                      controller: addressController,
+                      hint: 'Enter complaint address',
+                    ),
+                    const SizedBox(height: 14),
+                    const Text(
+                      'Upload Image',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {},
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF7DBE6A),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: const Text(
+                          'Choose Image',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const Spacer(),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: loading ? null : submitComplaint,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1E3A6D),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: loading
+                            ? const CircularProgressIndicator(color: Colors.white)
+                            : const Text(
+                                'Submit Complaint',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        child: BottomNavigationBar(
+          currentIndex: selectedIndex,
+          selectedItemColor: Colors.blue,
+          unselectedItemColor: Colors.grey,
+          onTap: (index) {
+            if (index == 0) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const HomeScreen()),
+              );
+            } else if (index == 2) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => const ComplaintHistoryScreen()),
+              );
+            } else if (index == 3) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const ProfileScreen()),
+              );
+            } else {
+              setState(() {
+                selectedIndex = index;
+              });
+            }
+          },
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.add_circle_outline),
+              label: 'New Complaint',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.history),
+              label: 'History',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person),
+              label: 'Profile',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _inputField({
+    required TextEditingController controller,
+    required String hint,
+    int maxLines = 1,
+  }) {
+    return TextField(
+      controller: controller,
+      maxLines: maxLines,
+      decoration: InputDecoration(
+        hintText: hint,
+        filled: true,
+        fillColor: Colors.grey.shade100,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide.none,
+        ),
+      ),
+    );
+  }
+
+  Widget _dropdownField() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: selectedCategory,
+          isExpanded: true,
+          items: categories
+              .map(
+                (cat) => DropdownMenuItem(value: cat, child: Text(cat)),
+              )
+              .toList(),
+          onChanged: (value) {
+            setState(() {
+              selectedCategory = value!;
+            });
+          },
+        ),
+      ),
+    );
+  }
+}

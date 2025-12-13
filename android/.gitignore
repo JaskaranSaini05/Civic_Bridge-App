@@ -1,14 +1,102 @@
-gradle-wrapper.jar
-/.gradle
-/captures/
-/gradlew
-/gradlew.bat
-/local.properties
-GeneratedPluginRegistrant.java
-.cxx/
+# =========================
+# Flutter / Dart
+# =========================
+.dart_tool/
+.packages
+.pub/
+.pub-cache/
+.flutter-plugins
+.flutter-plugins-dependencies
+.analysis_options.yaml
+.metadata
+.pubspec.lock
 
-# Remember to never publicly share your keystore.
-# See https://flutter.dev/to/reference-keystore
-key.properties
+# =========================
+# Build outputs
+# =========================
+build/
+web/build/
+
+# =========================
+# Environment files
+# =========================
+.env
+.env.*
+*.env
+
+# =========================
+# Firebase (VERY IMPORTANT)
+# =========================
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+macos/Runner/GoogleService-Info.plist
+lib/firebase_options.dart
+
+# =========================
+# Android
+# =========================
+android/.gradle/
+android/gradle-wrapper.jar
+android/local.properties
+android/key.properties
+android/**/GeneratedPluginRegistrant.java
+android/**/.cxx/
+android/captures/
+android/gradlew
+android/gradlew.bat
 **/*.keystore
 **/*.jks
+
+# =========================
+# iOS / macOS
+# =========================
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/ephemeral/
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+ios/Runner.xcworkspace/
+ios/Runner/GeneratedPluginRegistrant.*
+ios/Runner/Info.plist
+ios/DerivedData/
+
+macos/Pods/
+macos/Flutter/ephemeral/
+
+# =========================
+# Web
+# =========================
+web/.dart_tool/
+web/firebase.json
+web/.firebaserc
+
+# =========================
+# Windows
+# =========================
+windows/flutter/ephemeral/
+windows/.vs/
+windows/CMakeSettings.json
+windows/**/GeneratedPluginRegistrant.*
+
+# =========================
+# Linux
+# =========================
+linux/flutter/ephemeral/
+
+# =========================
+# IDEs
+# =========================
+.vscode/
+.idea/
+*.iml
+
+# =========================
+# Logs
+# =========================
+*.log
+
+# =========================
+# OS junk
+# =========================
+.DS_Store
+Thumbs.db

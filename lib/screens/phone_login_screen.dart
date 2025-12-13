@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'home_screen.dart';
+import 'otp_verification_screen.dart';
 
 class PhoneLoginScreen extends StatefulWidget {
   const PhoneLoginScreen({super.key});
@@ -48,7 +48,7 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(color: Colors.black12),
-                boxShadow: [
+                boxShadow: const [
                   BoxShadow(
                     color: Colors.black12,
                     blurRadius: 5,
@@ -84,9 +84,16 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
               width: double.infinity,
               height: 53,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const OtpVerificationScreen(),
+                    ),
+                  );
+                },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF7ECF72),
+                  backgroundColor: const Color(0xFF7ECF72),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
@@ -101,31 +108,6 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
-            Center(
-              child: InkWell(
-                borderRadius: BorderRadius.circular(6),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const HomeScreen(),
-                    ),
-                  );
-                },
-                child: const Padding(
-                  padding: EdgeInsets.all(10),
-                  child: Text(
-                    "New user? Sign up",
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF1D2C59),
-                    ),
-                  ),
-                ),
-              ),
-            )
           ],
         ),
       ),

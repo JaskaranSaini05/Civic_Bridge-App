@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'home_screen.dart';
+import 'forgot_password_screen.dart';
 
 class EmailLoginScreen extends StatefulWidget {
   const EmailLoginScreen({super.key});
@@ -11,6 +14,7 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   bool obscure = true;
+  bool loading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -83,12 +87,22 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
             const SizedBox(height: 10),
             Align(
               alignment: Alignment.centerRight,
-              child: Text(
-                "Forgot Password?",
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF1D2C59),
-                  fontWeight: FontWeight.w600,
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const ForgotPasswordScreen(),
+                    ),
+                  );
+                },
+                child: const Text(
+                  "Forgot Password?",
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF1D2C59),
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),
@@ -97,25 +111,27 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
               width: double.infinity,
               height: 55,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: loading ? null : _login,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF1D2C59),
+                  backgroundColor: const Color(0xFF1D2C59),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
                 ),
-                child: const Text(
-                  "Sign In",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                child: loading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text(
+                        "Sign In",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
               ),
             ),
             const SizedBox(height: 25),
-            Center(
+            const Center(
               child: Text(
                 "Sign In With Phone Number",
                 style: TextStyle(
@@ -129,5 +145,42 @@ class _EmailLoginScreenState extends State<EmailLoginScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _login() async {
+    setState(() {
+      loading = true;
+    });
+
+    try {
+      final userCredential =
+          await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+      );
+
+      if (userCredential.user != null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            e.code == 'user-not-found'
+                ? 'No user found for this email'
+                : e.code == 'wrong-password'
+                    ? 'Incorrect password'
+                    : e.message ?? 'Login failed',
+          ),
+        ),
+      );
+    } finally {
+      setState(() {
+        loading = false;
+      });
+    }
   }
 }
