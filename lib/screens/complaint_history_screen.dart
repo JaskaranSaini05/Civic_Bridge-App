@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
 import 'home_screen.dart';
 import 'register_complaint_screen.dart';
 import 'profile_screen.dart';
@@ -195,8 +196,8 @@ class ComplaintCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: const Border(
-          left: BorderSide(color: Color(0xFF6CBF6C), width: 4),
+        border: Border(
+          left: BorderSide(color: statusColor, width: 4),
         ),
       ),
       padding: const EdgeInsets.all(16),
@@ -206,12 +207,14 @@ class ComplaintCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF1E3A6D),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF1E3A6D),
+                  ),
                 ),
               ),
               Container(

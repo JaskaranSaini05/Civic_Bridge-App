@@ -1,6 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:image_picker/image_picker.dart';
+
 import 'home_screen.dart';
 import 'complaint_history_screen.dart';
 import 'profile_screen.dart';
@@ -22,6 +27,11 @@ class _RegisterComplaintScreenState extends State<RegisterComplaintScreen> {
   int selectedIndex = 1;
   bool loading = false;
 
+  File? selectedImage;
+  String? selectedImageName;
+
+  final ImagePicker picker = ImagePicker();
+
   final List<String> categories = [
     'Road',
     'Water',
@@ -39,7 +49,33 @@ class _RegisterComplaintScreenState extends State<RegisterComplaintScreen> {
     addressController.clear();
     setState(() {
       selectedCategory = 'Other';
+      selectedImage = null;
+      selectedImageName = null;
     });
+  }
+
+  Future<void> pickImage() async {
+    final XFile? image =
+        await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+
+    if (image != null) {
+      setState(() {
+        selectedImage = File(image.path);
+        selectedImageName = image.name;
+      });
+    }
+  }
+
+  Future<String?> uploadImage(String complaintId) async {
+    if (selectedImage == null) return null;
+
+    final ref = FirebaseStorage.instance
+        .ref()
+        .child('complaints')
+        .child('$complaintId.jpg');
+
+    await ref.putFile(selectedImage!);
+    return await ref.getDownloadURL();
   }
 
   Future<void> submitComplaint() async {
@@ -60,13 +96,19 @@ class _RegisterComplaintScreenState extends State<RegisterComplaintScreen> {
     });
 
     try {
-      await FirebaseFirestore.instance.collection('complaints').add({
+      final docRef =
+          FirebaseFirestore.instance.collection('complaints').doc();
+
+      String? imageUrl = await uploadImage(docRef.id);
+
+      await docRef.set({
         'title': titleController.text.trim(),
         'description': descriptionController.text.trim(),
         'category': selectedCategory,
         'address': addressController.text.trim(),
         'status': 'Pending',
         'userId': user.uid,
+        'imageUrl': imageUrl,
         'createdAt': Timestamp.now(),
       });
 
@@ -75,6 +117,7 @@ class _RegisterComplaintScreenState extends State<RegisterComplaintScreen> {
       );
 
       resetForm();
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const ComplaintHistoryScreen()),
@@ -209,7 +252,7 @@ class _RegisterComplaintScreenState extends State<RegisterComplaintScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {},
+                        onPressed: pickImage,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF7DBE6A),
                           padding: const EdgeInsets.symmetric(vertical: 14),
@@ -226,6 +269,38 @@ class _RegisterComplaintScreenState extends State<RegisterComplaintScreen> {
                         ),
                       ),
                     ),
+                    if (selectedImageName != null)
+                      Container(
+                        margin: const EdgeInsets.only(top: 10),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade200,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                selectedImageName!,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  selectedImage = null;
+                                  selectedImageName = null;
+                                });
+                              },
+                              child: const Icon(
+                                Icons.close,
+                                color: Colors.red,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     const Spacer(),
                     SizedBox(
                       width: double.infinity,
@@ -239,7 +314,8 @@ class _RegisterComplaintScreenState extends State<RegisterComplaintScreen> {
                           ),
                         ),
                         child: loading
-                            ? const CircularProgressIndicator(color: Colors.white)
+                            ? const CircularProgressIndicator(
+                                color: Colors.white)
                             : const Text(
                                 'Submit Complaint',
                                 style: TextStyle(
