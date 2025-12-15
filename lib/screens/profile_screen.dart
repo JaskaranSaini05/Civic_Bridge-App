@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'home_screen.dart';
 import 'register_complaint_screen.dart';
 import 'complaint_history_screen.dart';
@@ -15,6 +18,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF2F4F8),
       body: SafeArea(
@@ -47,32 +52,56 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 padding: const EdgeInsets.fromLTRB(18, 18, 18, 90),
                 child: Column(
                   children: [
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text(
-                            'Account Details',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF1E3A6D),
-                            ),
+                    StreamBuilder<DocumentSnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(user!.uid)
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return const Padding(
+                            padding: EdgeInsets.all(30),
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+
+                        final data =
+                            snapshot.data!.data() as Map<String, dynamic>;
+
+                        return Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(18),
                           ),
-                          SizedBox(height: 14),
-                          _ProfileItem('Name', 'Jethalal Gada'),
-                          _ProfileItem('Phone', '76x'),
-                          _ProfileItem('Address', 'Sony'),
-                          _ProfileItem('City', 'Ludhiana'),
-                          _ProfileItem('Account Created', 'Sun Oct 26 2025'),
-                        ],
-                      ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Account Details',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF1E3A6D),
+                                ),
+                              ),
+                              const SizedBox(height: 14),
+                              _ProfileItem('Name', data['name'] ?? ''),
+                              _ProfileItem('Phone', data['phone'] ?? ''),
+                              _ProfileItem('Address', data['address'] ?? ''),
+                              _ProfileItem(
+                                'Account Created',
+                                data['createdAt'] != null
+                                    ? data['createdAt']
+                                        .toDate()
+                                        .toString()
+                                    : '',
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
                     const SizedBox(height: 18),
                     Container(
@@ -152,7 +181,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           } else if (index == 2) {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (_) => const ComplaintHistoryScreen()),
+              MaterialPageRoute(
+                  builder: (_) => const ComplaintHistoryScreen()),
             );
           } else {
             setState(() {

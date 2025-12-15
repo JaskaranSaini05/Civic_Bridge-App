@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'otp_verification_screen.dart';
 
 class PhoneLoginScreen extends StatefulWidget {
@@ -10,6 +11,35 @@ class PhoneLoginScreen extends StatefulWidget {
 
 class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
   final phoneController = TextEditingController();
+  bool loading = false;
+
+  void sendOtp() async {
+    final phone = "+91${phoneController.text.trim()}";
+    setState(() => loading = true);
+
+    await FirebaseAuth.instance.verifyPhoneNumber(
+      phoneNumber: phone,
+      verificationCompleted: (PhoneAuthCredential credential) async {
+        await FirebaseAuth.instance.signInWithCredential(credential);
+      },
+      verificationFailed: (FirebaseAuthException e) {
+        setState(() => loading = false);
+      },
+      codeSent: (String verificationId, int? resendToken) {
+        setState(() => loading = false);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) =>
+                OtpVerificationScreen(verificationId: verificationId),
+          ),
+        );
+      },
+      codeAutoRetrievalTimeout: (String verificationId) {
+        setState(() => loading = false);
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,28 +114,23 @@ class _PhoneLoginScreenState extends State<PhoneLoginScreen> {
               width: double.infinity,
               height: 53,
               child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const OtpVerificationScreen(),
-                    ),
-                  );
-                },
+                onPressed: loading ? null : sendOtp,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF7ECF72),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
                 ),
-                child: const Text(
-                  "Continue",
-                  style: TextStyle(
-                    fontSize: 17,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                child: loading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text(
+                        "Continue",
+                        style: TextStyle(
+                          fontSize: 17,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
               ),
             ),
           ],
